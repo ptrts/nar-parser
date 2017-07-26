@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Charts</title>
+        <script type="text/javascript" language="javascript" src="MainModule2/MainModule2.nocache.js"></script>
+
+        <script src="http://api-maps.yandex.ru/2.0-stable/?load=package.full&lang=ru-RU"
+                type="text/javascript"></script>
+
+        <script type="text/javascript">
+            function buildOurYandexMap(id, street, building) {
+
+                var address = "Новосибирская область, Новосибирск, " + street + ", " + building;
+                var myMap;
+                ymaps.ready( function() {
+                    myMap = new ymaps.Map( "ymap" + id, {
+                        center: [55.010251, 82.958437], // Новосибирск
+                        zoom: 9
+                    } );
+                    myMap.controls.add( 'mapTools' );
+                    myMap.controls.add( 'zoomControl' );
+                    myMap.behaviors.enable( 'scrollZoom' );
+                    var geocoder = ymaps.geocode( address, {results: 1} );
+                    geocoder.then(
+                            function( res ) {
+                                var nearest = res.geoObjects.get( 0 );
+                                var name = nearest.properties.get( 'name' );
+                                var coord = nearest.geometry.getCoordinates();
+                                nearest.properties.set( 'balloonContent', name );
+                                nearest.options.set( 'preset', 'twirl#blueIcon' );
+                                myMap.geoObjects.add( res.geoObjects );
+                                myMap.setCenter( coord, 15 );
+                            },
+                            function( err ) {
+                                alert( 'Ошибка' );
+                            }
+                    );
+                } );
+            }
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
