@@ -18,7 +18,7 @@ FROM
       JOIN
       (
         SELECT DISTINCT variant_id
-        FROM variantstatuschange
+        FROM VariantStatusChange
         WHERE NOT open
       ) q
         ON vd.variant_id = q.variant_id
@@ -41,11 +41,11 @@ FROM
     SELECT
       st.variant_id,
       max(st.loadingDate) AS loadingDate
-    FROM variantstatuschange st
+    FROM VariantStatusChange st
     GROUP BY
       st.variant_id
   ) q
-  JOIN variantstatuschange st
+  JOIN VariantStatusChange st
     ON q.variant_id = st.variant_id
        AND q.loadingDate = st.loadingDate
        AND NOT st.open;
@@ -87,11 +87,11 @@ FROM
                 SELECT
                   st.variant_id,
                   max(st.loadingDate) AS loadingDate
-                FROM variantstatuschange st
+                FROM VariantStatusChange st
                 GROUP BY
                   st.variant_id
               ) q
-              JOIN variantstatuschange st
+              JOIN VariantStatusChange st
                 ON q.variant_id = st.variant_id
                    AND q.loadingDate = st.loadingDate
                    AND NOT st.open
@@ -103,7 +103,7 @@ FROM
               NULL                 AS loadingDate,
               max(log.loadingDate) AS priceDate
             FROM
-              propertychangelogentries log
+              PropertyChangeLogEntries log
             WHERE
               log.property = 'price'
             GROUP BY
@@ -121,7 +121,7 @@ FROM
   JOIN VariantData vd
     ON vd.variant_id = q.variant_id
        AND vd.loadingDate = q.loadingDate
-  JOIN propertychangelogentries log
+  JOIN PropertyChangeLogEntries log
     ON log.variant_id = q.variant_id
        AND log.property = 'price'
 GROUP BY
@@ -161,7 +161,7 @@ FROM
           (
             SELECT log.variant_id
             FROM
-              propertychangelogentries log
+              PropertyChangeLogEntries log
             WHERE
               log.property = 'price'
             GROUP BY
@@ -178,7 +178,7 @@ FROM
         ON vd.variant_id = q.variant_id
            AND vd.loadingDate = q.loadingDate
   ) q
-  JOIN propertychangelogentries log
+  JOIN PropertyChangeLogEntries log
     ON log.variant_id = q.variant_id
        AND log.property = 'price'
 GROUP BY

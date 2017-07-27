@@ -27,11 +27,11 @@ FROM
             SELECT
               st.variant_id,
               max(st.loadingDate) AS loadingDate
-            FROM variantstatuschange st
+            FROM VariantStatusChange st
             GROUP BY
               st.variant_id
           ) q
-          JOIN variantstatuschange st
+          JOIN VariantStatusChange st
             ON q.variant_id = st.variant_id
                AND q.loadingDate = st.loadingDate
                AND NOT st.open

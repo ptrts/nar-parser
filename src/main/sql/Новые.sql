@@ -23,7 +23,7 @@ FROM
           st.variant_id,
           st.loadingDate AS postDate
         FROM
-          variantstatuschange st
+          VariantStatusChange st
         where
           st.open
           and st.loadingDate >= '2015-07-15'
