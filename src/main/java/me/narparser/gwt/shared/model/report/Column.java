@@ -1,10 +1,18 @@
 package me.narparser.gwt.shared.model.report;
 
-import com.sencha.gxt.core.client.ValueProvider;
-
 import java.io.Serializable;
 
+import com.sencha.gxt.core.client.ValueProvider;
+
 public class Column<T extends Serializable> implements Serializable {
+
+    protected String name;
+
+    protected int index;
+
+    protected int width;
+
+    protected HorizontalAlignment horizontalAlignment;
 
     /**
      * Для сериализации
@@ -13,24 +21,15 @@ public class Column<T extends Serializable> implements Serializable {
     protected Column() {
     }
 
-    public enum HorizontalAlignment {
-        LEFT, RIGHT, CENTER
-    }
-
-    protected String name;
-    protected int index;
-    protected int width;
-    protected HorizontalAlignment horizontalAlignment;
-
-    public Object render(T t) {
-        return t.toString();
-    }
-
     public Column(String name, int width, HorizontalAlignment horizontalAlignment, int index) {
         this.name = name;
         this.width = width;
         this.horizontalAlignment = horizontalAlignment;
         this.index = index;
+    }
+
+    public Object render(T t) {
+        return t.toString();
     }
 
     public ValueProvider<Row, T> buildValueProvider() {
@@ -74,5 +73,9 @@ public class Column<T extends Serializable> implements Serializable {
 
     public int getWidth() {
         return width;
+    }
+
+    public enum HorizontalAlignment {
+        LEFT, RIGHT, CENTER
     }
 }

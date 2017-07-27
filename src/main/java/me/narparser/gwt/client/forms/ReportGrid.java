@@ -1,5 +1,10 @@
 package me.narparser.gwt.client.forms;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -19,43 +24,9 @@ import me.narparser.gwt.shared.model.report.Column;
 import me.narparser.gwt.shared.model.report.ReportModel;
 import me.narparser.gwt.shared.model.report.Row;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 public class ReportGrid implements IsWidget {
 
     private static final GwtServiceAsync gwtService = GWT.create(GwtService.class);
-
-    public interface OnReadyCallback {
-
-        void onReady(ReportGrid grid);
-    }
-
-    public static void get(String reportName, final Map<String, Serializable> param, final OnReadyCallback
-            onReadyCallback) {
-
-        gwtService.getReport(reportName, param, new AsyncCallback<ReportModel>() {
-            @Override
-            public void onFailure(Throwable caught) {
-            }
-
-            @Override
-            public void onSuccess(ReportModel reportModel) {
-                onReadyCallback.onReady(new ReportGrid(reportModel));
-            }
-        });
-    }
-
-    public static void activate(final String reportName, final Map<String, Serializable> param) {
-        get(reportName, param, new OnReadyCallback() {
-            @Override
-            public void onReady(ReportGrid grid) {
-                ClientSideContext.add(grid, reportName);
-            }
-        });
-    }
 
     private Grid<Row> grid;
 
@@ -134,6 +105,30 @@ public class ReportGrid implements IsWidget {
         foo();
     }
 
+    public static void get(String reportName, final Map<String, Serializable> param, final OnReadyCallback
+            onReadyCallback) {
+
+        gwtService.getReport(reportName, param, new AsyncCallback<ReportModel>() {
+            @Override
+            public void onFailure(Throwable caught) {
+            }
+
+            @Override
+            public void onSuccess(ReportModel reportModel) {
+                onReadyCallback.onReady(new ReportGrid(reportModel));
+            }
+        });
+    }
+
+    public static void activate(final String reportName, final Map<String, Serializable> param) {
+        get(reportName, param, new OnReadyCallback() {
+            @Override
+            public void onReady(ReportGrid grid) {
+                ClientSideContext.add(grid, reportName);
+            }
+        });
+    }
+
     @Override
     public Grid<Row> asWidget() {
         return grid;
@@ -149,4 +144,9 @@ public class ReportGrid implements IsWidget {
         jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
         (12345);
     }-*/;
+
+    public interface OnReadyCallback {
+
+        void onReady(ReportGrid grid);
+    }
 }

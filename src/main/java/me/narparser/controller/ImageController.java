@@ -1,27 +1,34 @@
 package me.narparser.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 @Controller
 public class ImageController {
 
-    @RequestMapping("resources/image/{variant}/{fileName}")
-    public void image(@PathVariable("variant") String variantId, @PathVariable("fileName") String fileName, HttpServletResponse response) {
+    @Value("${application.images.directory}")
+    private String folder;
 
-        String folder = "E:/nar-photos";
+    @RequestMapping("resources/image/{variant}/{fileName}")
+    public void image(@PathVariable("variant") String variantId, @PathVariable("fileName") String fileName,
+                      HttpServletResponse response) {
 
         fileName = fileName.replaceAll("-(\\w+)$", ".$1");
 
-        File file = new File(folder + "/" + variantId + "/" + fileName);
+        Path path = Paths.get(folder, variantId, fileName);
+        
+        File file = path.toFile();
 
         try (FileInputStream in = new FileInputStream(file)) {
 

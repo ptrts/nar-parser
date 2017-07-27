@@ -1,8 +1,8 @@
 package me.narparser.utils;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
+
+import org.apache.commons.io.IOUtils;
 
 public class ResourceUtils {
 

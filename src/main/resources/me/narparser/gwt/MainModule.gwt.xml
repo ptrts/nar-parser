@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module rename-to='MainModule2'>
+<module rename-to='MainModule'>
 
     <inherits name='com.google.gwt.user.User'/>
     <inherits name='com.sencha.gxt.ui.GXT'/>
-    <inherits name="com.sencha.gxt.theme.neptune.Theme" />
+    <inherits name="com.sencha.gxt.theme.neptune.Theme"/>
+
+    <inherits name="org.fusesource.restygwt.RestyGWT"/>
 
     <add-linker name="xsiframe"/>
 
     <entry-point class='me.narparser.gwt.client.MainEntryPoint'/>
 
-    <stylesheet src="reset.css" />
+    <stylesheet src="reset.css"/>
 
     <source path='client'/>
     <source path='shared'/>

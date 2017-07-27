@@ -1,18 +1,5 @@
 package me.narparser.service;
 
-import me.narparser.gwt.shared.model.report.Column;
-import me.narparser.gwt.shared.model.report.ReportModel;
-import me.narparser.gwt.shared.model.report.Row;
-import me.narparser.gwt.shared.model.report.column.BooleanColumn;
-import me.narparser.gwt.shared.model.report.column.IntegerColumn;
-import me.narparser.gwt.shared.model.report.column.StringColumn;
-import me.narparser.utils.ResourceUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Service;
-
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -20,6 +7,20 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Service;
+
+import me.narparser.gwt.shared.model.report.Column;
+import me.narparser.gwt.shared.model.report.ReportModel;
+import me.narparser.gwt.shared.model.report.Row;
+import me.narparser.gwt.shared.model.report.column.BooleanColumn;
+import me.narparser.gwt.shared.model.report.column.IntegerColumn;
+import me.narparser.gwt.shared.model.report.column.StringColumn;
+import me.narparser.utils.ResourceUtils;
 
 @Service
 public class ReportService {

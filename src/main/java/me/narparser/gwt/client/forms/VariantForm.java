@@ -1,5 +1,8 @@
 package me.narparser.gwt.client.forms;
 
+import java.util.Date;
+import java.util.List;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -13,14 +16,17 @@ import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
-import com.sencha.gxt.widget.core.client.form.*;
+import com.sencha.gxt.widget.core.client.form.CheckBox;
+import com.sencha.gxt.widget.core.client.form.DateField;
+import com.sencha.gxt.widget.core.client.form.FieldLabel;
+import com.sencha.gxt.widget.core.client.form.FloatField;
+import com.sencha.gxt.widget.core.client.form.IntegerField;
+import com.sencha.gxt.widget.core.client.form.TextArea;
+import com.sencha.gxt.widget.core.client.form.TextField;
 import me.narparser.gwt.client.ClientSideContext;
 import me.narparser.gwt.client.service.GwtService;
 import me.narparser.gwt.client.service.GwtServiceAsync;
 import me.narparser.gwt.shared.model.VariantBean;
-
-import java.util.Date;
-import java.util.List;
 
 public class VariantForm extends VerticalPanel {
 
@@ -29,45 +35,6 @@ public class VariantForm extends VerticalPanel {
     private final Margins margins = new Margins(5, 0, 0, 5);
 
     private final BoxLayoutContainer.BoxLayoutData fieldLayoutData = new BoxLayoutContainer.BoxLayoutData(margins);
-
-    public static void activate(String id, String text) {
-        VariantForm form = new VariantForm(id);
-        ClientSideContext.add(form, text);
-    }
-
-    private void addTextField(String name, String value, VBoxLayoutContainer vlc) {
-        TextField field = new TextField();
-        field.setValue(value);
-
-        vlc.add(new FieldLabel(field, name), fieldLayoutData);
-    }
-
-    private void addDateField(String name, Date value, VBoxLayoutContainer vlc) {
-        DateField field = new DateField();
-        field.setValue(value);
-        vlc.add(new FieldLabel(field, name), fieldLayoutData);
-    }
-
-    private void addIntField(String name, int value, VBoxLayoutContainer vlc) {
-        IntegerField field = new IntegerField();
-        field.setValue(value);
-        vlc.add(new FieldLabel(field, name), fieldLayoutData);
-    }
-
-    private void addFloatField(String name, float value, VBoxLayoutContainer vlc) {
-        FloatField field = new FloatField();
-        field.setValue(value);
-        vlc.add(new FieldLabel(field, name), fieldLayoutData);
-    }
-
-    private void addBooleanField(String name, boolean value, HorizontalPanel horizontalContainer) {
-
-        CheckBox check = new CheckBox();
-        check.setValue(value);
-        check.setBoxLabel(name);
-
-        horizontalContainer.add(check);
-    }
 
     public VariantForm(String id) {
 
@@ -168,7 +135,46 @@ public class VariantForm extends VerticalPanel {
         });
     }
 
+    public static void activate(String id, String text) {
+        VariantForm form = new VariantForm(id);
+        ClientSideContext.add(form, text);
+    }
+
     public static native void buildOurYandexMap(String id, String street, String building) /*-{
         $wnd.buildOurYandexMap(id, street, building);
     }-*/;
+
+    private void addTextField(String name, String value, VBoxLayoutContainer vlc) {
+        TextField field = new TextField();
+        field.setValue(value);
+
+        vlc.add(new FieldLabel(field, name), fieldLayoutData);
+    }
+
+    private void addDateField(String name, Date value, VBoxLayoutContainer vlc) {
+        DateField field = new DateField();
+        field.setValue(value);
+        vlc.add(new FieldLabel(field, name), fieldLayoutData);
+    }
+
+    private void addIntField(String name, int value, VBoxLayoutContainer vlc) {
+        IntegerField field = new IntegerField();
+        field.setValue(value);
+        vlc.add(new FieldLabel(field, name), fieldLayoutData);
+    }
+
+    private void addFloatField(String name, float value, VBoxLayoutContainer vlc) {
+        FloatField field = new FloatField();
+        field.setValue(value);
+        vlc.add(new FieldLabel(field, name), fieldLayoutData);
+    }
+
+    private void addBooleanField(String name, boolean value, HorizontalPanel horizontalContainer) {
+
+        CheckBox check = new CheckBox();
+        check.setValue(value);
+        check.setBoxLabel(name);
+
+        horizontalContainer.add(check);
+    }
 }

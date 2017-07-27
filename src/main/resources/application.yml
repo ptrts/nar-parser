@@ -1,0 +1,37 @@
+spring:
+    devtools:
+        restart:
+            enabled: true
+        livereload:
+            enabled: true
+    datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+        url: jdbc:mysql://localhost:3306/nar
+        username: root
+        password: 12345
+    jpa:
+        open-in-view: false
+        database-platform: org.hibernate.dialect.MySQL57InnoDBDialect
+        database: MYSQL
+        #show-sql: true
+        hibernate:
+            ddl-auto: update
+            naming:
+                
+                # Названия таблиц и колонок через snake_case
+                #physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                
+                # Названия таблиц и колонок как в Java
+                physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+                
+                implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+        properties:
+            hibernate.id.new_generator_mappings: true
+            hibernate.cache.use_second_level_cache: false
+            hibernate.cache.use_query_cache: false
+            hibernate.generate_statistics: true
+            hibernate.current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+
+application:
+    images:
+        directory: /opt/nar/images

@@ -4,11 +4,11 @@ import java.io.Serializable;
 
 public class Row implements Serializable {
 
+    private static int nextId = 0;
+
     private String key;
 
     private Serializable[] data;
-
-    private static int nextId = 0;
 
     // Для десериализации
     @SuppressWarnings("unused")

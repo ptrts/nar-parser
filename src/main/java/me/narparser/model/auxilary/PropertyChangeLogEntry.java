@@ -1,11 +1,18 @@
 package me.narparser.model.auxilary;
 
-import me.narparser.model.business.Loading;
-import me.narparser.model.business.Variant;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import me.narparser.model.business.Loading;
+import me.narparser.model.business.Variant;
 
 @Entity
 @Table(name = "PropertyChangeLogEntries")
@@ -16,14 +23,14 @@ public class PropertyChangeLogEntry implements Serializable {
     Variant variant;
 
     @Id
-    private String property;
-
-    @Id
     @Temporal(TemporalType.TIMESTAMP)
     Date loadingDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     Loading loading;
+
+    @Id
+    private String property;
 
     @Column(length = 2000)
     private String oldValue;

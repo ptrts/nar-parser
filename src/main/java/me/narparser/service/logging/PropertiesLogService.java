@@ -1,30 +1,38 @@
 package me.narparser.service.logging;
 
+import java.beans.PropertyDescriptor;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.ObjectUtils;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import me.narparser.model.auxilary.PropertyChangeLogEntry;
 import me.narparser.model.business.Loading;
 import me.narparser.model.business.Variant;
 import me.narparser.model.business.VariantData;
-import org.apache.commons.lang.ObjectUtils;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate4.HibernateTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.beans.PropertyDescriptor;
-import java.math.BigDecimal;
-import java.util.*;
 
 @Service
 public class PropertiesLogService {
+
+    private final Set<String> notLoggedProperties = new HashSet<>(
+            Arrays.asList("class", "variant", "loading", "loadingDate"));
 
     @Autowired
     private BeanWrapperService beanWrapperService;
 
     @Autowired
     private HibernateTemplate hibernate;
-
-    private final Set<String> notLoggedProperties = new HashSet<>(Arrays.asList("class", "variant", "loading", "loadingDate"));
 
     private boolean isPropertyLogged(String name) {
         return !notLoggedProperties.contains(name);
@@ -37,8 +45,8 @@ public class PropertiesLogService {
         }
 
         if (oldValue != null && oldValue.getClass() == BigDecimal.class
-            &&
-            newValue != null && newValue.getClass() == BigDecimal.class) {
+                &&
+                newValue != null && newValue.getClass() == BigDecimal.class) {
 
             BigDecimal bdOldValue = (BigDecimal) oldValue;
             BigDecimal bdNewValue = (BigDecimal) newValue;
@@ -48,8 +56,8 @@ public class PropertiesLogService {
         }
 
         if (oldValue != null && oldValue instanceof Date
-            &&
-            newValue != null && newValue instanceof Date) {
+                &&
+                newValue != null && newValue instanceof Date) {
 
             Date typedOldValue = (Date) oldValue;
             Date typedNewValue = (Date) newValue;

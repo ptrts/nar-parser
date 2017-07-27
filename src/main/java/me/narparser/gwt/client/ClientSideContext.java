@@ -5,6 +5,7 @@ import com.sencha.gxt.widget.core.client.TabItemConfig;
 import com.sencha.gxt.widget.core.client.TabPanel;
 
 public class ClientSideContext {
+
     private static TabPanel tabPanel;
 
     public static void add(IsWidget widget, String text) {

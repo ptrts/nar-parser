@@ -3,8 +3,30 @@ package me.narparser.service;
 // todo морда для отображения варианта
 // todo морды для отображения списков отчетов
 
-import me.narparser.model.business.*;
-import me.narparser.service.logging.PropertiesLogService;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.http.HttpEntity;
@@ -26,20 +48,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import me.narparser.model.business.Loading;
+import me.narparser.model.business.Photo;
+import me.narparser.model.business.Project;
+import me.narparser.model.business.Variant;
+import me.narparser.model.business.VariantData;
+import me.narparser.model.business.VariantFromList;
+import me.narparser.model.business.VariantStatusChange;
+import me.narparser.service.logging.PropertiesLogService;
 
 @Service
 public class MainService {
@@ -51,10 +72,13 @@ public class MainService {
     private static final String GET_VARIANT_METHOD_PATH = "result/object";
 
     @Autowired
-    private HibernateTemplate hibernate;
+    PropertiesLogService propertiesLogService;
 
     @Autowired
-    PropertiesLogService propertiesLogService;
+    private HibernateTemplate hibernate;
+
+    @Value("${application.images.directory}")
+    private String folder;
 
     @Transactional
     public void loadVariantsWithData(Project project, PrintWriter out) {
@@ -110,9 +134,9 @@ public class MainService {
         Session session = hibernate.getSessionFactory().getCurrentSession();
 
         Iterator it = session.createQuery("from Loading where project = :project order by loadingDate desc")
-                      .setParameter("project", project)
-                      .setMaxResults(1)
-                      .iterate();
+                .setParameter("project", project)
+                .setMaxResults(1)
+                .iterate();
 
         Validate.isTrue(it.hasNext());
 
@@ -124,9 +148,9 @@ public class MainService {
         Session session = hibernate.getSessionFactory().getCurrentSession();
 
         Iterator it = session.createQuery("from VariantData where variant = :variant order by loadingDate desc")
-                      .setParameter("variant", variant)
-                      .setMaxResults(1)
-                      .iterate();
+                .setParameter("variant", variant)
+                .setMaxResults(1)
+                .iterate();
 
         if (it.hasNext()) {
             return (VariantData) it.next();
@@ -205,61 +229,61 @@ public class MainService {
     private void loadVariants(Loading loading) {
 
         String sql =
-        "SELECT\n" +
-        "  q.variant_id,\n" +
-        "  max(q.newVariant_code)     AS newVariant_code,\n" +
-        "  max(q.wasOpen)             AS wasOpen,\n" +
-        "  max(q.nowOpen)             AS nowOpen,\n" +
-        "  max(q.wasInDb)             AS wasInDb\n" +
-        "FROM\n" +
-        "  (\n" +
-        "    SELECT\n" +
-        "      vfl.id   AS variant_id,\n" +
-        "      vfl.code AS newVariant_code,\n" +
-        "      FALSE    AS wasOpen,\n" +
-        "      TRUE     AS nowOpen,\n" +
-        "      FALSE    AS wasInDb\n" +
-        "    FROM\n" +
-        "      VariantFromList vfl\n" +
-        "\n" +
-        "    UNION ALL\n" +
-        "\n" +
-        "    SELECT\n" +
-        "      sc.variant_id,\n" +
-        "      NULL           AS newVariant_code,\n" +
-        "      sc.open        AS wasOpen,\n" +
-        "      FALSE          AS nowOpen,\n" +
-        "      TRUE           AS wasInDb\n" +
-        "    FROM\n" +
-        "      (\n" +
-        "        SELECT\n" +
-        "          sc.variant_id,\n" +
-        "          max(sc.loadingDate) AS loadingDate\n" +
-        "        FROM\n" +
-        "          VariantStatusChange sc\n" +
-        "          JOIN Variant v\n" +
-        "            ON sc.variant_id = v.id\n" +
-        "               AND v.project_id = :project_id\n" +
-        "        GROUP BY\n" +
-        "          sc.variant_id\n" +
-        "      ) q\n" +
-        "      JOIN VariantStatusChange sc\n" +
-        "        ON sc.variant_id = q.variant_id\n" +
-        "           AND sc.loadingDate = q.loadingDate\n" +
-        "      JOIN Variant v\n" +
-        "        ON q.variant_id = v.id\n" +
-        "  ) q\n" +
-        "GROUP BY\n" +
-        "  q.variant_id";
+                "SELECT\n" +
+                        "  q.variant_id,\n" +
+                        "  max(q.newVariant_code)     AS newVariant_code,\n" +
+                        "  max(q.wasOpen)             AS wasOpen,\n" +
+                        "  max(q.nowOpen)             AS nowOpen,\n" +
+                        "  max(q.wasInDb)             AS wasInDb\n" +
+                        "FROM\n" +
+                        "  (\n" +
+                        "    SELECT\n" +
+                        "      vfl.id   AS variant_id,\n" +
+                        "      vfl.code AS newVariant_code,\n" +
+                        "      FALSE    AS wasOpen,\n" +
+                        "      TRUE     AS nowOpen,\n" +
+                        "      FALSE    AS wasInDb\n" +
+                        "    FROM\n" +
+                        "      VariantFromList vfl\n" +
+                        "\n" +
+                        "    UNION ALL\n" +
+                        "\n" +
+                        "    SELECT\n" +
+                        "      sc.variant_id,\n" +
+                        "      NULL           AS newVariant_code,\n" +
+                        "      sc.open        AS wasOpen,\n" +
+                        "      FALSE          AS nowOpen,\n" +
+                        "      TRUE           AS wasInDb\n" +
+                        "    FROM\n" +
+                        "      (\n" +
+                        "        SELECT\n" +
+                        "          sc.variant_id,\n" +
+                        "          max(sc.loadingDate) AS loadingDate\n" +
+                        "        FROM\n" +
+                        "          VariantStatusChange sc\n" +
+                        "          JOIN Variant v\n" +
+                        "            ON sc.variant_id = v.id\n" +
+                        "               AND v.project_id = :project_id\n" +
+                        "        GROUP BY\n" +
+                        "          sc.variant_id\n" +
+                        "      ) q\n" +
+                        "      JOIN VariantStatusChange sc\n" +
+                        "        ON sc.variant_id = q.variant_id\n" +
+                        "           AND sc.loadingDate = q.loadingDate\n" +
+                        "      JOIN Variant v\n" +
+                        "        ON q.variant_id = v.id\n" +
+                        "  ) q\n" +
+                        "GROUP BY\n" +
+                        "  q.variant_id";
 
         Query query = hibernate.getSessionFactory().getCurrentSession().createSQLQuery(sql)
-                      .addScalar("variant_id", StringType.INSTANCE)
-                      .addScalar("newVariant_code", StringType.INSTANCE)
-                      .addScalar("wasOpen", BooleanType.INSTANCE)
-                      .addScalar("nowOpen", BooleanType.INSTANCE)
-                      .addScalar("wasInDb", BooleanType.INSTANCE)
-                      .setInteger("project_id", loading.getProject().getId())
-                      .setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+                .addScalar("variant_id", StringType.INSTANCE)
+                .addScalar("newVariant_code", StringType.INSTANCE)
+                .addScalar("wasOpen", BooleanType.INSTANCE)
+                .addScalar("nowOpen", BooleanType.INSTANCE)
+                .addScalar("wasInDb", BooleanType.INSTANCE)
+                .setInteger("project_id", loading.getProject().getId())
+                .setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> queryRows = query.list();
@@ -275,10 +299,10 @@ public class MainService {
             //@formatter:on
 
             System.out.println(
-                              "variantId = " + variantId +
-                              ", newVariantCode = " + newVariantCode +
-                              ", wasOpen = " + wasOpen +
-                              ", nowOpen = " + nowOpen
+                    "variantId = " + variantId +
+                            ", newVariantCode = " + newVariantCode +
+                            ", wasOpen = " + wasOpen +
+                            ", nowOpen = " + nowOpen
             );
 
             Variant variant;
@@ -315,30 +339,30 @@ public class MainService {
         Session session = hibernate.getSessionFactory().getCurrentSession();
 
         String sql =
-        "SELECT v.*\n" +
-        "FROM\n" +
-        "  (\n" +
-        "    SELECT\n" +
-        "      st.variant_id,\n" +
-        "      max(st.loadingDate) AS loadingDate\n" +
-        "    FROM\n" +
-        "      VariantStatusChange st\n" +
-        "    GROUP BY\n" +
-        "      st.variant_id\n" +
-        "  ) q\n" +
-        "  JOIN VariantStatusChange st\n" +
-        "    ON q.variant_id = st.variant_id\n" +
-        "       AND q.loadingDate = st.loadingDate\n" +
-        "       AND st.open\n" +
-        "  JOIN Variant v\n" +
-        "    ON q.variant_id = v.id\n" +
-        "       AND v.project_id = :project_id";
+                "SELECT v.*\n" +
+                        "FROM\n" +
+                        "  (\n" +
+                        "    SELECT\n" +
+                        "      st.variant_id,\n" +
+                        "      max(st.loadingDate) AS loadingDate\n" +
+                        "    FROM\n" +
+                        "      VariantStatusChange st\n" +
+                        "    GROUP BY\n" +
+                        "      st.variant_id\n" +
+                        "  ) q\n" +
+                        "  JOIN VariantStatusChange st\n" +
+                        "    ON q.variant_id = st.variant_id\n" +
+                        "       AND q.loadingDate = st.loadingDate\n" +
+                        "       AND st.open\n" +
+                        "  JOIN Variant v\n" +
+                        "    ON q.variant_id = v.id\n" +
+                        "       AND v.project_id = :project_id";
 
         @SuppressWarnings("unchecked")
         List<Variant> list = session.createSQLQuery(sql)
-                             .addEntity("v", Variant.class)
-                             .setInteger("project_id", loading.getProject().getId())
-                             .list();
+                .addEntity("v", Variant.class)
+                .setInteger("project_id", loading.getProject().getId())
+                .list();
 
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
@@ -383,9 +407,9 @@ public class MainService {
         }
 
         String info = doc
-                      .getElementsByClass("object-center").first()
-                      .getElementsByClass("object-num").first()
-                      .text();
+                .getElementsByClass("object-center").first()
+                .getElementsByClass("object-num").first()
+                .text();
 
         loadVariantPhotos(variant, doc, httpClient);
 
@@ -395,8 +419,8 @@ public class MainService {
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
 
         Pattern pattern = Pattern.compile(
-                                         ",\\s*обновлен\\s*(\\d{2}\\.\\d{2}\\.\\d{4})" +
-                                         ",\\s*опубликован\\s*(\\d{2}\\.\\d{2}\\.\\d{4})"
+                ",\\s*обновлен\\s*(\\d{2}\\.\\d{2}\\.\\d{4})" +
+                        ",\\s*опубликован\\s*(\\d{2}\\.\\d{2}\\.\\d{4})"
         );
 
         Matcher matcher = pattern.matcher(info);
@@ -514,7 +538,6 @@ public class MainService {
             propertiesLogService.logChangedProperties(lastVariantData, variantData);
         }
 
-
         variant.setLastLoadingDate(loading.getLoadingDate());
     }
 
@@ -567,7 +590,8 @@ public class MainService {
                         String contentType = entity.getContentType().getValue();
                         long contentLength = entity.getContentLength();
 
-                        if (contentLength != photo.getLength() || !Objects.equals(contentType, photo.getContentType())) {
+                        if (contentLength != photo.getLength() || !Objects.equals(contentType,
+                                photo.getContentType())) {
 
                             photo.setLength(contentLength);
                             photo.setContentType(contentType);
@@ -594,7 +618,8 @@ public class MainService {
     }
 
     private File getPhotoFile(Variant variant, String fileName) {
-        Path path = Paths.get("E:", "nar-photos", variant.getId());
+        
+        Path path = Paths.get(folder, variant.getId());
 
         File dir = path.toFile();
 

@@ -1,0 +1,117 @@
+buildscript {
+	ext {
+		springBootVersion = "1.5.4.RELEASE"
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+	}
+}
+
+apply plugin: "java"
+apply plugin: "eclipse"
+apply plugin: "org.springframework.boot"
+
+version = "1"
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	
+    compile "org.springframework.boot:spring-boot-starter-data-jpa"
+	compile "org.springframework.boot:spring-boot-starter-web"
+    compile "com.zaxxer:HikariCP:2.6.0"
+
+    compile('javax.ws.rs:javax.ws.rs-api:2.0.1')
+    
+	// GWT
+
+	compileOnly "com.google.gwt:gwt-user:${gwt_version}"
+    compileOnly "com.google.gwt:gwt-dev:${gwt_version}"
+
+	compile "com.google.gwt:gwt-servlet:${gwt_version}"
+
+	// GXT
+
+    compile "com.sencha.gxt:gxt:${gxt_version}"
+
+	compileOnly "javax.validation:validation-api:1.0.0.GA"
+
+	// GXT 3.1+ - Neptune Theme
+
+    compileOnly "com.sencha.gxt:gxt-theme-neptune:${gxt_version}"
+
+    // RestyGWT
+    
+    compile "org.fusesource.restygwt:restygwt:2.2.0"
+    
+
+	// HTML parser
+	compile "org.jsoup:jsoup:1.8.2"
+
+	compile "commons-lang:commons-lang:2.6"
+
+	compile "com.google.guava:guava:18.0"
+
+	compile "commons-io:commons-io:2.4"
+
+	compile "org.apache.httpcomponents:httpclient:4.5"
+	
+	runtime "org.springframework.boot:spring-boot-devtools"
+	runtime "mysql:mysql-connector-java"
+	compileOnly "org.projectlombok:lombok"
+	testCompile "org.springframework.boot:spring-boot-starter-test"
+}
+
+task compileGwt(dependsOn: classes, type: JavaExec) {
+    ext.buildDir = "${project.buildDir}/resources/main/static"
+    ext.extraDir = "${project.buildDir}/extra"
+
+    inputs.file sourceSets.main.java.srcDirs
+    inputs.dir sourceSets.main.output.resourcesDir
+    outputs.dir buildDir
+
+    doFirst {
+        file(buildDir).mkdirs()
+    }
+
+    main = 'com.google.gwt.dev.Compiler'
+
+    classpath {
+        [
+                sourceSets.main.java.srcDirs,           // Java source
+                sourceSets.main.output.resourcesDir,    // Generated resources
+                sourceSets.main.output.classesDir,      // Generated classes
+                sourceSets.main.compileClasspath,       // Deps
+        ]
+    }
+
+    args = [
+            'me.narparser.gwt.MainModule',
+            '-war', buildDir,
+            '-logLevel', 'INFO',
+            '-localWorkers', '4',
+            '-compileReport',
+            '-extra', extraDir,
+            '-style', 'OBF',
+            '-optimize', '7' // 0=none, 9=max
+    ]
+
+    maxHeapSize = '512M'
+}
+
+compileJava.dependsOn(processResources)
+
+jar.dependsOn compileGwt
+
+jar {
+    baseName = 'nar-parser'
+    version = '1.0.0'
+}
+
+bootRun.dependsOn compileGwt

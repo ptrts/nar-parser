@@ -1,14 +1,15 @@
 package me.narparser.controller;
 
-import me.narparser.model.business.Project;
-import me.narparser.service.MainService;
+import java.io.PrintWriter;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.io.PrintWriter;
+import me.narparser.model.business.Project;
+import me.narparser.service.MainService;
 
 @Controller
 @RequestMapping("project/{project}")
@@ -37,7 +38,6 @@ public class MainController {
         mainService.loadList(project);
         out.println("Complete");
     }
-    
 
     @RequestMapping("load/variants")
     public void loadVariants(@PathVariable("project") int projectId, PrintWriter out) {

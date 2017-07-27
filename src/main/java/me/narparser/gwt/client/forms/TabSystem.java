@@ -10,8 +10,6 @@ public class TabSystem extends TabPanel {
 
     public TabSystem() {
 
-
-
         SelectionHandler<Widget> handler = new SelectionHandler<Widget>() {
             @Override
             public void onSelection(SelectionEvent<Widget> event) {
@@ -23,10 +21,6 @@ public class TabSystem extends TabPanel {
                 TabItemConfig config = getConfig(w);
             }
         };
-
-
-
-
 
     }
 }

@@ -1,5 +1,9 @@
 package me.narparser.gwt.client;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.core.client.util.Margins;
@@ -9,17 +13,15 @@ import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import me.narparser.gwt.client.forms.ReportGrid;
 import me.narparser.gwt.client.forms.VariantForm;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 public class Menu implements IsWidget {
 
     private VerticalLayoutContainer widget = null;
 
     private Margins buttonMargins = new Margins(2, 2, 0, 2);
 
-    private VerticalLayoutContainer.VerticalLayoutData buttonLayoutData = new VerticalLayoutContainer.VerticalLayoutData(150, 30, buttonMargins);
+    private VerticalLayoutContainer.VerticalLayoutData buttonLayoutData = new VerticalLayoutContainer
+            .VerticalLayoutData(
+            150, 30, buttonMargins);
 
     @Override
     public Widget asWidget() {

@@ -1,5 +1,8 @@
 package me.narparser.gwt.client.forms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -15,17 +18,19 @@ import me.narparser.gwt.client.service.GwtService;
 import me.narparser.gwt.client.service.GwtServiceAsync;
 import me.narparser.gwt.shared.model.VariantBean;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class VariantsGrid implements IsWidget {
 
     private static final VariantBeanProperties props = GWT.create(VariantBeanProperties.class);
+
     private static final GwtServiceAsync gwtService = GWT.create(GwtService.class);
 
     private Widget widget;
 
     private int projectId;
+
+    public VariantsGrid(int projectId) {
+        this.projectId = projectId;
+    }
 
     @Override
     public Widget asWidget() {
@@ -81,9 +86,5 @@ public class VariantsGrid implements IsWidget {
         }
 
         return widget;
-    }
-
-    public VariantsGrid(int projectId) {
-        this.projectId = projectId;
     }
 }

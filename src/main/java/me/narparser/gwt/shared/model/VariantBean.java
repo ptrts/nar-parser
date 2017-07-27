@@ -6,33 +6,60 @@ import java.util.List;
 
 public class VariantBean implements Serializable {
 
-    private String id;
-    private String code;
     Date changeDate;
+
     Date postDate;
+
     int views;
+
     String shortCode;
+
     int price;
+
     int rooms;
+
     String city;
+
     String district;
+
     String street;
+
     String building;
+
     String type;
+
     int floor;
+
     int floors;
+
     String material;
+
     float area;
+
     float livingArea;
+
     float kitchenArea;
+
     String layout;
+
     String balcony;
+
     String bathroom;
+
     String phone;
+
     boolean pureSell;
+
     boolean exchange;
+
     String property;
+
     String description;
+
+    private String id;
+
+    private String code;
+
     private Boolean open;
 
     private List<String> imageFileNames;
@@ -81,6 +108,10 @@ public class VariantBean implements Serializable {
         return floor;
     }
 
+    public void setFloor(int floor) {
+        this.floor = floor;
+    }
+
     public void setFloor(Integer floor) {
         this.floor = floor;
     }
@@ -97,16 +128,16 @@ public class VariantBean implements Serializable {
         return price;
     }
 
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
     public void setPrice(Integer price) {
         this.price = price;
     }
 
     public Boolean isOpen() {
         return open;
-    }
-
-    public void setOpen(Boolean open) {
-        this.open = open;
     }
 
     public Date getChangeDate() {
@@ -141,10 +172,6 @@ public class VariantBean implements Serializable {
         this.shortCode = shortCode;
     }
 
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
     public int getRooms() {
         return rooms;
     }
@@ -159,10 +186,6 @@ public class VariantBean implements Serializable {
 
     public void setCity(String city) {
         this.city = city;
-    }
-
-    public void setFloor(int floor) {
-        this.floor = floor;
     }
 
     public int getFloors() {
@@ -271,6 +294,10 @@ public class VariantBean implements Serializable {
 
     public Boolean getOpen() {
         return open;
+    }
+
+    public void setOpen(Boolean open) {
+        this.open = open;
     }
 
     public List<String> getImageFileNames() {

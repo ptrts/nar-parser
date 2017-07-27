@@ -7,14 +7,21 @@ import me.narparser.gwt.shared.model.VariantBean;
 
 public interface VariantBeanProperties extends PropertyAccess<VariantBean> {
 
-  ModelKeyProvider<VariantBean> id();
+    ModelKeyProvider<VariantBean> id();
 
-  ValueProvider<VariantBean, String> code();
-  ValueProvider<VariantBean, String> district();
-  ValueProvider<VariantBean, String> street();
-  ValueProvider<VariantBean, String> building();
-  ValueProvider<VariantBean, Integer> floor();
-  ValueProvider<VariantBean, String> type();
-  ValueProvider<VariantBean, Integer> price();
-  ValueProvider<VariantBean, Boolean> open();
+    ValueProvider<VariantBean, String> code();
+
+    ValueProvider<VariantBean, String> district();
+
+    ValueProvider<VariantBean, String> street();
+
+    ValueProvider<VariantBean, String> building();
+
+    ValueProvider<VariantBean, Integer> floor();
+
+    ValueProvider<VariantBean, String> type();
+
+    ValueProvider<VariantBean, Integer> price();
+
+    ValueProvider<VariantBean, Boolean> open();
 }

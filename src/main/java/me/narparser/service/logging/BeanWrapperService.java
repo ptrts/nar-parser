@@ -1,9 +1,10 @@
 package me.narparser.service.logging;
 
-import me.narparser.model.business.VariantData;
-import me.narparser.model.business.VariantStatusChange;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
+
+import me.narparser.model.business.VariantData;
+import me.narparser.model.business.VariantStatusChange;
 
 @Service
 public class BeanWrapperService {

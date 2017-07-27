@@ -17,6 +17,11 @@ public class ReportModel implements Serializable {
     private ReportModel() {
     }
 
+    public ReportModel(Column<?>[] columns, List<Row> rows) {
+        this.columns = columns;
+        this.rows = rows;
+    }
+
     @SuppressWarnings("unchecked")
     public Column<Serializable>[] getColumns() {
         // Мы не боимся кастить колонки что в них лежит Serializable, потому что
@@ -32,11 +37,6 @@ public class ReportModel implements Serializable {
 
     public List<Row> getRows() {
         return rows;
-    }
-
-    public ReportModel(Column<?>[] columns, List<Row> rows) {
-        this.columns = columns;
-        this.rows = rows;
     }
 
     public <T extends Serializable> Column<T> getColumn(String name) {

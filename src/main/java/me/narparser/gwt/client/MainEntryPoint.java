@@ -15,7 +15,9 @@ import com.sencha.gxt.widget.core.client.container.Viewport;
 public class MainEntryPoint implements IsWidget, EntryPoint {
 
     private SimpleContainer simpleContainer;
+
     private ContentPanel west;
+
     private ContentPanel center;
 
     public Widget asWidget() {
@@ -67,11 +69,13 @@ public class MainEntryPoint implements IsWidget, EntryPoint {
 
     public void onModuleLoad() {
 
-        // Это вариант SimpleContainer, который расплывается на весь экран, и детей своих расплывает тоже (в чем самый и смысл)
+        // Это вариант SimpleContainer, который расплывается на весь экран, и детей своих расплывает тоже (в чем 
+        // самый и смысл)
         Viewport viewport = new Viewport();
         viewport.add(asWidget());
 
-        // SimpleContainer, кстати, может иметь только одного потомка. Он может управлять размерами потомка, его видимостью
+        // SimpleContainer, кстати, может иметь только одного потомка. Он может управлять размерами потомка, его 
+        // видимостью
         // и чего-нибудь дорисовать вокруг него. Как все контейнеры, собственно
 
         RootPanel.get().add(viewport);
