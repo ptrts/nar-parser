@@ -1,10 +1,10 @@
 package me.narparser.model.business;
 
 import java.io.Serializable;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
 @Entity
 public class Project implements Serializable {
@@ -15,7 +15,7 @@ public class Project implements Serializable {
 
     String name;
 
-    @Column(length = 1000)
+    @Lob
     String listUrl;
 
     public int getId() {

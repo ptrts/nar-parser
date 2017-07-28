@@ -42,7 +42,7 @@ public class MainEntryPoint implements IsWidget, EntryPoint {
 
             ClientSideContext.setTabPanel(tabPanel);
 
-            BorderLayoutData westData = new BorderLayoutData(150);
+            BorderLayoutData westData = new BorderLayoutData(220);
             // Кругленькая картиночка в заголовке для схлопывания панельки в направлении границы
             westData.setCollapsible(true);
             // Это чтоб можно было ресайзить мышкой. setCollapseMini(true) тоже имеет такой побочный эффект

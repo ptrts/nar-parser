@@ -101,8 +101,6 @@ public class ReportGrid implements IsWidget {
         grid.setSelectionModel(new GridSelectionModel<Row>());
         grid.getView().setForceFit(true);
         grid.getView().layout();
-
-        foo();
     }
 
     public static void get(String reportName, final Map<String, Serializable> param, final OnReadyCallback
@@ -120,11 +118,11 @@ public class ReportGrid implements IsWidget {
         });
     }
 
-    public static void activate(final String reportName, final Map<String, Serializable> param) {
+    public static void activate(final String reportName, final String tabCaption, final Map<String, Serializable> param) {
         get(reportName, param, new OnReadyCallback() {
             @Override
             public void onReady(ReportGrid grid) {
-                ClientSideContext.add(grid, reportName);
+                ClientSideContext.add(grid, tabCaption);
             }
         });
     }
@@ -133,17 +131,6 @@ public class ReportGrid implements IsWidget {
     public Grid<Row> asWidget() {
         return grid;
     }
-
-    public native void foo()/*-{
-
-        function
-        jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
-        () {
-        }
-
-        jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
-        (12345);
-    }-*/;
 
     public interface OnReadyCallback {
 

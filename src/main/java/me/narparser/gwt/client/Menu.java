@@ -2,26 +2,35 @@ package me.narparser.gwt.client;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
+import com.sencha.gxt.core.client.dom.ScrollSupport;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import me.narparser.gwt.client.forms.ReportGrid;
 import me.narparser.gwt.client.forms.VariantForm;
+import me.narparser.gwt.client.service.GwtService;
+import me.narparser.gwt.client.service.GwtServiceAsync;
+import me.narparser.gwt.shared.model.ProjectBean;
 
 public class Menu implements IsWidget {
 
+    private static final GwtServiceAsync gwtService = GWT.create(GwtService.class);
+    
     private VerticalLayoutContainer widget = null;
 
     private Margins buttonMargins = new Margins(2, 2, 0, 2);
 
     private VerticalLayoutContainer.VerticalLayoutData buttonLayoutData = new VerticalLayoutContainer
             .VerticalLayoutData(
-            150, 30, buttonMargins);
+            200, 30, buttonMargins);
 
     @Override
     public Widget asWidget() {
@@ -30,14 +39,11 @@ public class Menu implements IsWidget {
 
             widget = new VerticalLayoutContainer();
 
-            addReports();
+            //widget.setScrollSupport();
+            widget.setScrollMode(ScrollSupport.ScrollMode.AUTOY);
+            //widget.setAdjustForScroll();
 
-            addItem("Наша квартира", new SelectEvent.SelectHandler() {
-                @Override
-                public void onSelect(SelectEvent event) {
-                    VariantForm.activate("580672", "Наша квартира");
-                }
-            });
+            addReports();
         }
 
         return widget;
@@ -45,7 +51,7 @@ public class Menu implements IsWidget {
 
     private void addItem(String text, SelectEvent.SelectHandler handler) {
         TextButton button = new TextButton(text);
-        button.setWidth(150);
+        button.setWidth(200);
         button.addSelectHandler(handler);
         widget.add(button, buttonLayoutData);
     }
@@ -54,31 +60,52 @@ public class Menu implements IsWidget {
         addReport(name, name, null);
     }
 
-    private void addReport(final String reportName, String text, final Map<String, Serializable> param) {
+    private void addReport(final String reportName, final String text, final Map<String, Serializable> param) {
         addItem(text, new SelectEvent.SelectHandler() {
             @Override
             public void onSelect(SelectEvent event) {
-                ReportGrid.activate(reportName, param);
+                ReportGrid.activate(reportName, text, param);
             }
         });
     }
 
     private void addReports() {
 
-        Map<String, Serializable> param1 = new HashMap<>();
-        param1.put("project_id", 1);
+        gwtService.getProjects(new AsyncCallback<List<ProjectBean>>() {
+            
+            @Override
+            public void onFailure(Throwable caught) {
+            }
 
-        addReport("variants", "variants 1", param1);
-        addReport("openVariants", "openVariants 1", param1);
+            @Override
+            public void onSuccess(List<ProjectBean> projects) {
 
-        Map<String, Serializable> param2 = new HashMap<>();
-        param2.put("project_id", 2);
+                for (ProjectBean project : projects) {
+                    addProjectReports(project);
+                }
 
-        addReport("variants", "variants 2", param2);
-        addReport("openVariants", "openVariants 2", param2);
+                addReport("sells");
+                addReport("priceDown");
+                addReport("new");
+                
+                addItem("Наша квартира", new SelectEvent.SelectHandler() {
+                    @Override
+                    public void onSelect(SelectEvent event) {
+                        VariantForm.activate("580672", "Наша квартира");
+                    }
+                });
+            }
+        });
+    }
 
-        addReport("sells");
-        addReport("priceDown");
-        addReport("new");
+    private void addProjectReports(ProjectBean project) {
+        
+        Map<String, Serializable> params = new HashMap<>();
+        params.put("project_id", project.getId());
+
+        String projectCaption = "" + project.getName();
+        
+        addReport("variants", projectCaption + ": варианты", params);
+        addReport("openVariants", projectCaption + ": открытые ", params);
     }
 }

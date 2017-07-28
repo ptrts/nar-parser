@@ -20,7 +20,7 @@ public class ImageController {
     @Value("${application.images.directory}")
     private String folder;
 
-    @RequestMapping("resources/image/{variant}/{fileName}")
+    @RequestMapping("image/{variant}/{fileName}")
     public void image(@PathVariable("variant") String variantId, @PathVariable("fileName") String fileName,
                       HttpServletResponse response) {
 

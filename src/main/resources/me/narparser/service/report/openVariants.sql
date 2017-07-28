@@ -18,8 +18,10 @@ FROM
       Variant v
       JOIN VariantData vd
         ON vd.variant_id = v.id
-    WHERE
-      v.project_id = :project_id
+      JOIN Variant_Project vp
+        ON vp.Variant_id = v.id
+          AND vp.projects_id = :project_id
+      
     GROUP BY
       vd.variant_id
   ) q
@@ -33,10 +35,11 @@ FROM
       max(sc.loadingDate) AS loadingDate
     FROM
       Variant v
+      JOIN Variant_Project vp
+        ON vp.Variant_id = v.id
+           AND vp.projects_id = :project_id
       JOIN VariantStatusChange sc
         ON sc.variant_id = v.id
-    WHERE
-      v.project_id = :project_id
     GROUP BY
       sc.variant_id
   ) q2

@@ -5,6 +5,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
 @Entity
@@ -15,9 +16,10 @@ public class Photo implements Serializable {
     private Variant variant;
 
     @Id
+    @Column(columnDefinition = "VARCHAR(255) COLLATE utf8_bin NOT NULL")
     private String fileName;
 
-    @Column(length = 500)
+    @Lob
     private String url;
 
     private long length;

@@ -1,8 +1,5 @@
 package me.narparser.service;
 
-// todo морда для отображения варианта
-// todo морды для отображения списков отчетов
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,6 +24,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.http.HttpEntity;
@@ -49,8 +48,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import me.narparser.model.business.Loading;
@@ -72,161 +73,112 @@ public class MainService {
     private static final String GET_VARIANT_METHOD_PATH = "result/object";
 
     @Autowired
-    PropertiesLogService propertiesLogService;
+    private ApplicationContext applicationContext;
+    
+    @Autowired
+    private PropertiesLogService propertiesLogService;
 
     @Autowired
     private HibernateTemplate hibernate;
 
     @Value("${application.images.directory}")
     private String folder;
-
-    @Transactional
-    public void loadVariantsWithData(Project project, PrintWriter out) {
-
-        Date loadingDate = new Date();
-
-        Loading loading = new Loading();
-        loading.setProject(project);
-        loading.setLoadingDate(loadingDate);
-
-        hibernate.saveOrUpdate(loading);
-
-        loadVariants(loading);
-        loadVariantsData(loading, out);
+    
+    private MainService thisBeanProxy;
+    
+    @PostConstruct
+    private void postConstruct() {
+        thisBeanProxy = applicationContext.getBean(MainService.class);
     }
 
     @Transactional
-    public void loadList(Project project) {
+    public void loadList(PrintWriter out) {
 
-        Date loadingDate = new Date();
-
-        Loading loading = new Loading();
-        loading.setProject(project);
-        loading.setLoadingDate(loadingDate);
-
-        hibernate.saveOrUpdate(loading);
-
-        loadList(loading);
-    }
-
-    @Transactional
-    public void loadVariants(Project project) {
-
-        Date loadingDate = new Date();
-
-        Loading loading = new Loading();
-        loading.setProject(project);
-        loading.setLoadingDate(loadingDate);
-
-        hibernate.saveOrUpdate(loading);
-
-        loadVariants(loading);
-    }
-
-    @Transactional
-    public void loadVariantsData(Project project, PrintWriter out) {
-        Loading loading = getLastLoading(project);
-        loadVariantsData(loading, out);
-    }
-
-    public Loading getLastLoading(Project project) {
-
-        Session session = hibernate.getSessionFactory().getCurrentSession();
-
-        Iterator it = session.createQuery("from Loading where project = :project order by loadingDate desc")
-                .setParameter("project", project)
-                .setMaxResults(1)
-                .iterate();
-
-        Validate.isTrue(it.hasNext());
-
-        return (Loading) it.next();
-    }
-
-    public VariantData getLastVariantData(Variant variant) {
-
-        Session session = hibernate.getSessionFactory().getCurrentSession();
-
-        Iterator it = session.createQuery("from VariantData where variant = :variant order by loadingDate desc")
-                .setParameter("variant", variant)
-                .setMaxResults(1)
-                .iterate();
-
-        if (it.hasNext()) {
-            return (VariantData) it.next();
-        } else {
-            return null;
-        }
-    }
-
-    private void loadList(Loading loading) {
-
+        // Шаблон на последовательность цифр
         Pattern pattern = Pattern.compile("\\d+");
-
-        List<VariantFromList> variants = new ArrayList<>(100);
-
-        // Очистить VariantFromList
-        hibernate.bulkUpdate("delete from VariantFromList");
 
         try {
 
-            Connection connection = Jsoup.connect(SERVICE_URL + "/" + loading.getProject().getListUrl());
+            // Очистить VariantFromList
+            // Это буферная таблица, из которой, после обработки, данные пойдут в Variant
+            hibernate.bulkUpdate("delete from VariantFromList");
 
-            connection.timeout(10000);
+            @SuppressWarnings("unchecked")
+            List<Project> projects = (List<Project>) hibernate.find("from Project order by id");
 
-            Document doc = connection.get();
+            for (Project project : projects) {
+                
+                out.println("Проект №" + project.getId() + ": " + project.getName());
 
-            Element table = doc.getElementById("o-results");
+                // Делаем список для вариантов
+                List<VariantFromList> variants = new ArrayList<>(100);
 
-            Elements rows = table.getElementsByTag("tr");
+                Connection connection = Jsoup.connect(SERVICE_URL + "/" + project.getListUrl());
 
-            Iterator<Element> it = rows.iterator();
+                connection.timeout(10000);
 
-            // Строка с заголовками
-            it.next();
+                Document doc = connection.get();
 
-            // Строки с вариантами
-            while (it.hasNext()) {
-                Element tr = it.next();
+                Element table = doc.getElementById("o-results");
 
-                Iterator<Element> tds = tr.children().iterator();
+                Elements rows = table.getElementsByTag("tr");
 
-                // Какая-то хрень с процентами
-                tds.next();
+                Iterator<Element> it = rows.iterator();
 
-                // Фото
-                tds.next();
+                // Строка с заголовками
+                it.next();
 
-                // Ссылка
-                Element a = tds.next().getElementsByTag("a").first();
-                String href = a.attr("href");
-                String code = a.text();
+                // Строки с вариантами
+                while (it.hasNext()) {
 
-                Matcher matcher = pattern.matcher(href);
+                    Element tr = it.next();
 
-                Validate.isTrue(matcher.find());
+                    Iterator<Element> tds = tr.children().iterator();
 
-                String id = matcher.group();
+                    // Фото
+                    tds.next();
 
-                VariantFromList variant = new VariantFromList();
-                variant.setId(id);
-                variant.setCode(code);
+                    // Ссылка
+                    Element a = tds.next().getElementsByTag("a").first();
+                    String href = a.attr("href");
+                    String code = a.text();
 
-                variants.add(variant);
+                    Matcher matcher = pattern.matcher(href);
+
+                    Validate.isTrue(matcher.find());
+
+                    String id = matcher.group();
+
+                    VariantFromList variant = new VariantFromList();
+                    variant.setId(id);
+                    variant.setCode(code);
+
+                    variants.add(variant);
+                }
+
+                for (VariantFromList variant : variants) {
+
+                    VariantFromList existingVariant = hibernate.get(VariantFromList.class, variant.getId());
+
+                    if (existingVariant == null) {
+                        variant.getProjects().add(project);
+                        hibernate.saveOrUpdate(variant);
+                    } else {
+                        existingVariant.getProjects().add(project);
+                    }
+                }
+
+                hibernate.flush();
             }
-
-            for (VariantFromList variant : variants) {
-                hibernate.saveOrUpdate(variant);
-            }
-
-            hibernate.flush();
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void loadVariants(Loading loading) {
+    @Transactional
+    public void loadVariants() {
+
+        Loading loading = getLastLoading();
 
         String sql =
                 "SELECT\n" +
@@ -263,7 +215,6 @@ public class MainService {
                         "          VariantStatusChange sc\n" +
                         "          JOIN Variant v\n" +
                         "            ON sc.variant_id = v.id\n" +
-                        "               AND v.project_id = :project_id\n" +
                         "        GROUP BY\n" +
                         "          sc.variant_id\n" +
                         "      ) q\n" +
@@ -282,7 +233,6 @@ public class MainService {
                 .addScalar("wasOpen", BooleanType.INSTANCE)
                 .addScalar("nowOpen", BooleanType.INSTANCE)
                 .addScalar("wasInDb", BooleanType.INSTANCE)
-                .setInteger("project_id", loading.getProject().getId())
                 .setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 
         @SuppressWarnings("unchecked")
@@ -311,8 +261,13 @@ public class MainService {
             } else {
                 variant = new Variant();
                 variant.setId(variantId);
-                variant.setProject(loading.getProject());
                 hibernate.save(variant);
+            }
+            
+            if (nowOpen) {
+                VariantFromList variantFromList = hibernate.get(VariantFromList.class, variantId);
+                // Копируем проекты загруженного варианта, в созданный или обновляемый вариант
+                variant.setProjects(new ArrayList<>(variantFromList.getProjects()));
             }
 
             // Обновить код
@@ -320,6 +275,7 @@ public class MainService {
                 variant.setCode(newVariantCode);
             }
 
+            // Изменяем статус, если он изменился
             if (wasOpen != nowOpen) {
                 VariantStatusChange variantStatusChange = new VariantStatusChange();
                 variantStatusChange.setVariant(variant);
@@ -334,10 +290,13 @@ public class MainService {
         hibernate.flush();
     }
 
-    private void loadVariantsData(Loading loading, PrintWriter out) {
+    public void loadVariantsData(PrintWriter out) {
 
-        Session session = hibernate.getSessionFactory().getCurrentSession();
+        int loadingId = thisBeanProxy.getLastLoadingId();
 
+        Session session = hibernate.getSessionFactory().openSession();
+
+        // Запрашиваем список открытых вариантов
         String sql =
                 "SELECT v.*\n" +
                         "FROM\n" +
@@ -356,24 +315,34 @@ public class MainService {
                         "       AND st.open\n" +
                         "  JOIN Variant v\n" +
                         "    ON q.variant_id = v.id\n" +
-                        "       AND v.project_id = :project_id";
+                        "WHERE\n" +
+                        "  v.id NOT IN (\n" +
+                        "    SELECT vd.variant_id\n" +
+                        "    FROM VariantData vd\n" +
+                        "    WHERE vd.loading_id = :loading_id\n" +
+                        "  )";
 
         @SuppressWarnings("unchecked")
         List<Variant> list = session.createSQLQuery(sql)
                 .addEntity("v", Variant.class)
-                .setInteger("project_id", loading.getProject().getId())
+                .setInteger("loading_id", loadingId)
                 .list();
 
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         try {
+            
+            // По каждому открытому на данный момент варианту
             for (Variant variant : list) {
 
                 out.print("" + variant.getId() + "(" + variant.getCode() + ")...");
                 out.flush();
 
                 try {
-                    loadVariantData(loading, variant, httpClient);
+                    
+                    // Загружаем его данные несколькими отдельными HTTP запросами
+                    thisBeanProxy.loadVariantData(loadingId, variant.getId(), httpClient);
+                    
                     System.out.println("OK");
                     out.println("OK");
                 } catch (Exception e) {
@@ -389,11 +358,56 @@ public class MainService {
         }
     }
 
-    private void loadVariantData(Loading loading, Variant variant, CloseableHttpClient httpClient) {
+    public void loadVariantsWithData(PrintWriter out) {
 
+        thisBeanProxy.loadVariants();
+        thisBeanProxy.loadVariantsData(out);
+    }
+
+    private Loading getLastLoading() {
+
+        Session session = hibernate.getSessionFactory().getCurrentSession();
+
+        Iterator it = session.createQuery("from Loading order by loadingDate desc")
+                .setMaxResults(1)
+                .iterate();
+
+        Validate.isTrue(it.hasNext());
+
+        return (Loading) it.next();
+    }
+    
+    @Transactional
+    public int getLastLoadingId() {
+        return getLastLoading().getId();
+    }
+
+    private VariantData getLastVariantData(Variant variant) {
+
+        Session session = hibernate.getSessionFactory().getCurrentSession();
+
+        Iterator it = session.createQuery("from VariantData where variant = :variant order by loadingDate desc")
+                .setParameter("variant", variant)
+                .setMaxResults(1)
+                .iterate();
+
+        if (it.hasNext()) {
+            return (VariantData) it.next();
+        } else {
+            return null;
+        }
+    }
+
+    @Transactional
+    public void loadVariantData(int loadingId, String variantId, CloseableHttpClient httpClient) {
+
+        Loading loading = hibernate.get(Loading.class, loadingId);
+
+        Variant variant = hibernate.get(Variant.class, variantId);
+        
         System.out.println("=== " + variant.getCode());
 
-        String variantUrl = SERVICE_URL + "/" + GET_VARIANT_METHOD_PATH + "/" + variant.getId();
+        String variantUrl = SERVICE_URL + "/" + GET_VARIANT_METHOD_PATH + "/" + variantId;
 
         Connection connection = Jsoup.connect(variantUrl);
 
@@ -505,21 +519,21 @@ public class MainService {
         variantData.setPostDate    ( postDate                      );
         variantData.setChangeDate  ( changeDate                    );
         variantData.setVariant     ( variant                       );
-        variantData.setViews       ( Integer.parseInt(views)       );
+        variantData.setViews       ( parseInt(views)       );
         variantData.setShortCode   ( shortCode                     );
-        variantData.setPrice       ( Integer.parseInt(price)       );
-        variantData.setRooms       ( Integer.parseInt(rooms)       );
+        variantData.setPrice       ( parseInt(price)       );
+        variantData.setRooms       ( parseInt(rooms)       );
         variantData.setCity        ( city                          );
         variantData.setDistrict    ( district                      );
         variantData.setStreet      ( street                        );
         variantData.setBuilding    ( building                      );
         variantData.setType        ( type                          );
-        variantData.setFloor       ( Integer.parseInt(floor)       );
-        variantData.setFloors      ( Integer.parseInt(floors)      );
+        variantData.setFloor       ( parseInt(floor)       );
+        variantData.setFloors      ( parseInt(floors)      );
         variantData.setMaterial    ( material                      );
-        variantData.setArea        ( Float.parseFloat(area)        );
-        variantData.setLivingArea  ( Float.parseFloat(livingArea)  );
-        variantData.setKitchenArea ( Float.parseFloat(kitchenArea) );
+        variantData.setArea        ( parseFloat(area)        );
+        variantData.setLivingArea  ( parseFloat(livingArea)  );
+        variantData.setKitchenArea ( parseFloat(kitchenArea) );
         variantData.setLayout      ( layout                        );
         variantData.setBalcony     ( balcony                       );
         variantData.setBathroom    ( bathroom                      );
@@ -539,6 +553,20 @@ public class MainService {
         }
 
         variant.setLastLoadingDate(loading.getLoadingDate());
+    }
+
+    private int parseInt(String str) {
+        if ("-".equals(str)) {
+            return 0;
+        }
+        return Integer.parseInt(str);
+    }
+
+    private float parseFloat(String str) {
+        if ("-".equals(str)) {
+            return 0;
+        }
+        return Float.parseFloat(str);
     }
 
     private void loadVariantPhotos(Variant variant, Document doc, CloseableHttpClient httpClient) {
@@ -642,5 +670,15 @@ public class MainService {
         SessionImplementor sessionImpl = (SessionImplementor) s;
         PersistenceContext persistenceContext = sessionImpl.getPersistenceContext();
         return persistenceContext.getEntitiesByKey().values();
+    }
+    
+    @Transactional
+    public void createLoading() {
+        
+        Loading loading = new Loading();
+        loading.setLoadingDate(new Date());
+        hibernate.save(loading);
+        
+        hibernate.bulkUpdate("delete from VariantFromList");
     }
 }

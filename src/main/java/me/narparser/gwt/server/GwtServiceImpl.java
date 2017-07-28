@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -16,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import me.narparser.gwt.client.service.GwtService;
+import me.narparser.gwt.shared.model.ProjectBean;
 import me.narparser.gwt.shared.model.VariantBean;
 import me.narparser.gwt.shared.model.report.ReportModel;
+import me.narparser.model.business.Project;
 import me.narparser.service.ReportService;
 
 @Service("gwtService")
@@ -197,5 +200,21 @@ public class GwtServiceImpl implements GwtService {
         variantBean.setImageFileNames(fileNames);
 
         return variantBean;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ProjectBean> getProjects() {
+        List<Project> projects = (List<Project>) hibernate.find("from Project order by id");
+        return projects.stream().map(project -> {
+            
+            ProjectBean bean = new ProjectBean();
+
+            bean.setId(project.getId());
+            bean.setName(project.getName());
+            
+            return bean;
+            
+        }).collect(Collectors.toList());
     }
 }

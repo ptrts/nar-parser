@@ -32,7 +32,7 @@ FROM
           (
             SELECT log.variant_id
             FROM
-              PropertyChangeLogEntries log
+              PropertyChangeLogEntry log
             WHERE
               log.property = 'price'
             GROUP BY
@@ -49,7 +49,7 @@ FROM
         ON vd.variant_id = q.variant_id
            AND vd.loadingDate = q.loadingDate
   ) q
-  JOIN PropertyChangeLogEntries log
+  JOIN PropertyChangeLogEntry log
     ON log.variant_id = q.variant_id
        AND log.property = 'price'
 GROUP BY

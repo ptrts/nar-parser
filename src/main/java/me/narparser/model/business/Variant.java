@@ -2,13 +2,14 @@ package me.narparser.model.business;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 
@@ -21,8 +22,8 @@ public class Variant implements Serializable {
 
     private String code;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Project project;
+    @ManyToMany(fetch = FetchType.LAZY)
+    private List<Project> projects;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "variant")
     @MapKey(name = "fileName")
@@ -46,12 +47,12 @@ public class Variant implements Serializable {
         this.code = code;
     }
 
-    public Project getProject() {
-        return project;
+    public List<Project> getProjects() {
+        return projects;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setProjects(List<Project> project) {
+        this.projects = project;
     }
 
     public Date getLastLoadingDate() {

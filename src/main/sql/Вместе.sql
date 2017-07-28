@@ -103,7 +103,7 @@ FROM
               NULL                 AS loadingDate,
               max(log.loadingDate) AS priceDate
             FROM
-              PropertyChangeLogEntries log
+              PropertyChangeLogEntry log
             WHERE
               log.property = 'price'
             GROUP BY
@@ -121,7 +121,7 @@ FROM
   JOIN VariantData vd
     ON vd.variant_id = q.variant_id
        AND vd.loadingDate = q.loadingDate
-  JOIN PropertyChangeLogEntries log
+  JOIN PropertyChangeLogEntry log
     ON log.variant_id = q.variant_id
        AND log.property = 'price'
 GROUP BY
@@ -161,7 +161,7 @@ FROM
           (
             SELECT log.variant_id
             FROM
-              PropertyChangeLogEntries log
+              PropertyChangeLogEntry log
             WHERE
               log.property = 'price'
             GROUP BY
@@ -178,7 +178,7 @@ FROM
         ON vd.variant_id = q.variant_id
            AND vd.loadingDate = q.loadingDate
   ) q
-  JOIN PropertyChangeLogEntries log
+  JOIN PropertyChangeLogEntry log
     ON log.variant_id = q.variant_id
        AND log.property = 'price'
 GROUP BY

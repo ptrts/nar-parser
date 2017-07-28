@@ -6,8 +6,10 @@ import java.util.Map;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import me.narparser.gwt.shared.model.ProjectBean;
 import me.narparser.gwt.shared.model.VariantBean;
 import me.narparser.gwt.shared.model.report.ReportModel;
+import me.narparser.model.business.Project;
 
 @RemoteServiceRelativePath("rpc/gwtService")
 public interface GwtService extends RemoteService {
@@ -17,4 +19,6 @@ public interface GwtService extends RemoteService {
     ReportModel getReport(String name, Map<String, Serializable> param);
 
     VariantBean getVariant(String id);
+
+    List<ProjectBean> getProjects();
 }
