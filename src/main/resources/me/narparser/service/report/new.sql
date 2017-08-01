@@ -10,7 +10,7 @@ FROM
   (
     SELECT
       vd.variant_id,
-      q.postDate,
+      max(q.postDate) AS postDate,
       max(vd.loadingDate) AS loadingDate
     FROM
       VariantData vd
@@ -23,7 +23,7 @@ FROM
           VariantStatusChange st
         WHERE
           st.open
-          AND st.loadingDate >= '2015-07-15'
+          AND st.loadingDate >= '2017-07-29'
       ) q
         ON vd.variant_id = q.variant_id
     GROUP BY
