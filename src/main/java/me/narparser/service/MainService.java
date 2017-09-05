@@ -115,7 +115,7 @@ public class MainService {
 
                 Connection connection = Jsoup.connect(SERVICE_URL + "/" + project.getListUrl());
 
-                connection.timeout(10000);
+                connection.timeout(30000);
 
                 Document doc = connection.get();
 
@@ -411,7 +411,7 @@ public class MainService {
 
         Connection connection = Jsoup.connect(variantUrl);
 
-        connection.timeout(10000);
+        connection.timeout(30000);
 
         Document doc;
         try {

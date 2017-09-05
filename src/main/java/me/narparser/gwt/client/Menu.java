@@ -106,6 +106,9 @@ public class Menu implements IsWidget {
         String projectCaption = "" + project.getName();
         
         addReport("variants", projectCaption + ": варианты", params);
-        addReport("openVariants", projectCaption + ": открытые ", params);
+        addReport("openVariants", projectCaption + ": открытые", params);
+        addReport("sellsByProject", projectCaption + ": продажи", params);
+        addReport("priceDownByProject", projectCaption + ": снижения", params);
+        addReport("newByProject", projectCaption + ": новые", params);
     }
 }
