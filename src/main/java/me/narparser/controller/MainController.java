@@ -48,6 +48,8 @@ public class MainController {
     public void load(PrintWriter out) {
         out.println("Loading started...");
         out.flush();
+        mainService.createLoading();
+        mainService.loadList(out);
         mainService.loadVariantsWithData(out);
         out.println("Complete");
     }
