@@ -296,65 +296,70 @@ public class MainService {
 
         Session session = hibernate.getSessionFactory().openSession();
 
-        // Запрашиваем список открытых вариантов
-        String sql =
-                "SELECT v.*\n" +
-                        "FROM\n" +
-                        "  (\n" +
-                        "    SELECT\n" +
-                        "      st.variant_id,\n" +
-                        "      max(st.loadingDate) AS loadingDate\n" +
-                        "    FROM\n" +
-                        "      VariantStatusChange st\n" +
-                        "    GROUP BY\n" +
-                        "      st.variant_id\n" +
-                        "  ) q\n" +
-                        "  JOIN VariantStatusChange st\n" +
-                        "    ON q.variant_id = st.variant_id\n" +
-                        "       AND q.loadingDate = st.loadingDate\n" +
-                        "       AND st.open\n" +
-                        "  JOIN Variant v\n" +
-                        "    ON q.variant_id = v.id\n" +
-                        "WHERE\n" +
-                        "  v.id NOT IN (\n" +
-                        "    SELECT vd.variant_id\n" +
-                        "    FROM VariantData vd\n" +
-                        "    WHERE vd.loading_id = :loading_id\n" +
-                        "  )";
-
-        @SuppressWarnings("unchecked")
-        List<Variant> list = session.createSQLQuery(sql)
-                .addEntity("v", Variant.class)
-                .setInteger("loading_id", loadingId)
-                .list();
-
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-
         try {
-            
-            // По каждому открытому на данный момент варианту
-            for (Variant variant : list) {
 
-                out.print("" + variant.getId() + "(" + variant.getCode() + ")...");
-                out.flush();
+            // Запрашиваем список открытых вариантов
+            String sql =
+                    "SELECT v.*\n" +
+                            "FROM\n" +
+                            "  (\n" +
+                            "    SELECT\n" +
+                            "      st.variant_id,\n" +
+                            "      max(st.loadingDate) AS loadingDate\n" +
+                            "    FROM\n" +
+                            "      VariantStatusChange st\n" +
+                            "    GROUP BY\n" +
+                            "      st.variant_id\n" +
+                            "  ) q\n" +
+                            "  JOIN VariantStatusChange st\n" +
+                            "    ON q.variant_id = st.variant_id\n" +
+                            "       AND q.loadingDate = st.loadingDate\n" +
+                            "       AND st.open\n" +
+                            "  JOIN Variant v\n" +
+                            "    ON q.variant_id = v.id\n" +
+                            "WHERE\n" +
+                            "  v.id NOT IN (\n" +
+                            "    SELECT vd.variant_id\n" +
+                            "    FROM VariantData vd\n" +
+                            "    WHERE vd.loading_id = :loading_id\n" +
+                            "  )";
 
-                try {
-                    
-                    // Загружаем его данные несколькими отдельными HTTP запросами
-                    thisBeanProxy.loadVariantData(loadingId, variant.getId(), httpClient);
-                    
-                    System.out.println("OK");
-                    out.println("OK");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("ERROR");
-                    out.println("ERROR");
+            @SuppressWarnings("unchecked")
+            List<Variant> list = session.createSQLQuery(sql)
+                    .addEntity("v", Variant.class)
+                    .setInteger("loading_id", loadingId)
+                    .list();
+
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+            try {
+
+                // По каждому открытому на данный момент варианту
+                for (Variant variant : list) {
+
+                    out.print("" + variant.getId() + "(" + variant.getCode() + ")...");
+                    out.flush();
+
+                    try {
+
+                        // Загружаем его данные несколькими отдельными HTTP запросами
+                        thisBeanProxy.loadVariantData(loadingId, variant.getId(), httpClient);
+
+                        System.out.println("OK");
+                        out.println("OK");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("ERROR");
+                        out.println("ERROR");
+                    }
+
+                    out.flush();
                 }
-
-                out.flush();
+            } finally {
+                IOUtils.closeQuietly(httpClient);
             }
         } finally {
-            IOUtils.closeQuietly(httpClient);
+            IOUtils.closeQuietly(session);
         }
     }
 
@@ -666,8 +671,8 @@ public class MainService {
 
     @SuppressWarnings("unused")
     public Collection getSessionObjects() {
-        Session s = hibernate.getSessionFactory().getCurrentSession();
-        SessionImplementor sessionImpl = (SessionImplementor) s;
+        Session session = hibernate.getSessionFactory().getCurrentSession();
+        SessionImplementor sessionImpl = (SessionImplementor) session;
         PersistenceContext persistenceContext = sessionImpl.getPersistenceContext();
         return persistenceContext.getEntitiesByKey().values();
     }
