@@ -9,6 +9,24 @@ spring:
         url: jdbc:mysql://localhost:3306/nar?useUnicode=true&characterEncoding=utf8&autoReconnect=true&useSSL=false
         username: root
         password: 12345
+        hikari:
+
+          # Максимальное количество милисекунд, которое клиенты будут ждать для получения соединения,
+          # прежде чем будет выброшено исключение
+          connectionTimeout: 1000
+
+          # Количество времени, через которое неактивное соединение убивается
+          idle-timeout: 600000
+
+          # Количество времени с момента создания соединения, через которое оно убивается.
+          # Активные соединения убиваются после того, как их возвращают в пул
+          max-lifetime: 1800000
+
+          # Минимальное число неактивных соединений в пуле
+          minimum-idle: 1
+
+          # Тут понятно. Это максимальный размер пула
+          maximum-pool-size: 5
     jpa:
         open-in-view: false
         database-platform: org.hibernate.dialect.MySQL57InnoDBDialect
